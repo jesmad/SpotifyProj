@@ -1,0 +1,228 @@
+Ranked Retrieval
+-------------------
+Query can have very few or way too many results
+	=> AND => less results
+	=> OR => too many results
+Ranked retrieval, the system returns an ordering over the (top) documents in the collection 
+for a query.
+Ranking algorithm works better than Boolean models for most users.
+Scoring (query, document) pairs...(less frequent the term) 0 <= x <= 1 (more frequent the term)
+Jaccard coefficient is a commonly used measure of overlap of terms in two sets A and B
+	Jc(A,B) = abs(A INTERSECTs B)/abs(A UNION B)
+	=> where Jc(A,A) = 1
+	=> Jc(A,B) = 0 if a INTERSECTS B = 0
+A and B don't have to be the same size 
+Jaccard coefficient: limitations
+	1. It doesn't consider term frequency.
+	2. Rare terms in a collection are more informative than frequent terms. 
+	3. We need a more spohisticated way of normalizing for length.
+Bag of words model
+	=> Vector representation doesn't consider the ordering of words in a document
+	=> this model does not track positional information
+Term frequency 
+	=> the termfrequency tf of term t in document d is the number of times that t
+	occurs in d.
+	=>raw term frequency is not what we want
+		=> relevance does not increase porportionally with term frequency.
+Log frequency weighting 
+	=>weight = { 1 + logtf, if tf>0
+		   { 0, otherwise
+	Score(query, document) = SUMMATION (1 + log tf)
+Rare terms are more informative than frequent terms.
+	=> we want a high weight for rare terms
+
+Document frequency
+	=> frequent terms are less informative than rare terms
+	=> df is the documetn frequency of t, or the number of documents that contain t
+	=>idf(t) = log(N/df(t))
+Effect of idf on ranking
+	=> idf has no effect on ranking one term queries
+	=> for the query capricious person, idf weighting makes occurences of capricious
+	for much more in the final document ranking than occurrences of person.
+	=> inverse document frequency factor is incorporated which diminishes the weight
+	of terms that occur very frequently in the document set and increases the weight of
+	terms that occur rarely  
+Collection vs Document Frequency
+	=> The collection requency cf of t is the number of occurence of t in the collection
+	counting multiple occurrences per document
+	=>In general, we will consider the document frequency (df) a better measure than
+	collection frequency for ranked retrieval
+tf-idf weighting
+	weigth = (1 + log(tf)) x log(N/df(t))
+	=>increases with the numebr of occurences within a document
+	=>increases with the rarity of the term in the collection
+	=> Best know weighting scheme
+	=> the value increases proportionally to the number of times a word appears
+	int the document and is offset by the number of documents in the corpus
+	that contain word , which helps to adjust for the fact that some words appear
+	more frequently in general.
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ Vector Space Model 
+---------------------
+Vecotr Space Model 
+	=> is an algebraic model for representing text documents as vectors of identifiers
+	,such as, index terms.
+
+The weight matrix defines a |V| dimensional vecotr space where:
+	=>Weight = (1 + log(tf)) x log(N/d)
+	=> terms are axes of the space 
+	=> documents are points in this space 
+	=> documents can be represented as vectors
+	=> properties:
+		-Very high-dimensional: tens of millions of dimensions when you apply this to a web search engine 
+		-Results in very sparse vectors - most entries are zero
+Queries as vectors
+	=>1 represent queries as vectors in the space like documents
+	=>2 Rank documents based on their proximity to the query space 
+		-Proximity = similarity of vectors
+		-Rank more relevant documents higher than less relevant documents
+Euclidean distance
+	=> distance between the endpoints of two vectors
+	=> Bad idea because the distance can be large for vectors of varying large lengths
+		-Distance between query and document can be large (less similarity) yet they share a similar distribution of terms
+Angles of Similarity
+	=> the angle of a two simalr lines appended at the end of one each other is 0, corresponding to maximal similarity
+	=>Key idea: rank documents according to angle with query
+Length Normalization 
+	=> A vecotr can be (length)- normalized by dividing each of itfs components by its length
+		-Dividing a vector by its length makes it a unit vector
+		-Vectors are just directional on surface of unit hypershpere
+	=>Long and short documents now have comaprable weights
+	=>Length normalization => D/||D||
+From angles to cosines
+	=> Rank documents in increasing order of the angle query-document.
+	=> Rank documents in decreasing order of cosine(query, document)
+	=> Cosine is a decreasing function from the interval [0, 180 degrees]
+	=> The closer the angle is to 90 degrees then the less similar the two vectors are.
+Cosine similarity 
+	=>is the cosine similarity of q and d or equivalently the cosine of the angle between q and d.
+tf, df and noramilization 
+	=> SMART notation: denotes the combination in use in an engine, with the notation ddd.qqq, using the acronyms from the previous table.
+		-document.query
+		=>n = natural, l = logarithm, a =augmented, b=boolean, L=log ave
+	=>similarity = cos(THETA) = (A*B)/(magnitude(A)*magnitude(B))
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Efficient Scoring
+-------------------------
+find the largest K doc in the collection "nearest" to the query 	
+	=> k largest query-doc cosines
+Two aspects to consider for efficient ranking:
+	1. Chposing the K largest cosine values efficiently
+	2.Computing cosine values efficiently
+We don't want to srot the all docs in the collection.
+Heap data structure
+	Max heap. Like the project for 165
+Unweighted Query terms
+	=>No weighting on query terms
+	=> assume each query term occurs only once
+	=>then for ranking, don't need to consider term frequency 
+	=>documents frequency is already weighted in the document vectors
+
+Computing Cosines Efficiently	
+	=> find a set A of values, with K < |A| << N
+	
+Techniques
+	=>1.Index elimination: only considers docs containg at least one query term
+		can improve bny considering high-idf query terms
+			benefit: postings of low-idf terms have many docs --> these (many) docs get elimnated from set A of contenders
+		only considering docs containing many of the query terms
+			for multi-term queries, only compute scores for docs containing several of the query terms
+	=>2. Champion Lists
+		-1. Precompute for each dictionary term t, the r docs of highest weight in t's postings
+		-2. At query time, only compute scores for docs in the champion list of some query term
+		-3. Pick the K top-scoring docs amongst these
+	=>3. Static Quality Scores
+		We want top-ranking documents to be both relevant and authoritative
+		Modeling authority:
+			Assign each document a query-independent quality score in [0,1] to each document d. Denote this by g(d)
+			Beenfits: 
+				UNder g(d)-ordering, top scoring docs likely to appear early in postings traversal
+		net Score:
+			net-score(q,d) = g(d) + cosine(q,d)
+	=>4. High and low lists
+		For each term maintain two lists, a high and low.
+		High => is t champions list 
+	=>5. Impact Ordered Postings
+		We only want to compute scores for docs which wf is high enough
+			-we sort each postings list by wf
+				-as a result not all the posting are in a comon order
+	=>6. Cluster Pruning
+		Preprocessing 
+			pick random docs: call thes leaders
+			for evry other document, pre ocmpute nearrest leader
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+IR System components
+-------------------
+Parametric indexes: Fields
+	We sometimes wish to search by metadata
+	Field or paramteric index: postings for each field value
+		Sometimes buidl range trees
+	Field query typically treated as conjunction
+	
+Parametric Indexes: Zone
+	a zone is the region of the document that can contains arbitrary amount of text
+	Example: "Find docs with merchant in the tile zone and matching the query gentle rain"
+tiered Indexes
+	breakpostings up into a hierarchy of lists
+		MOst Important
+		Least important
+Query Term Proximity
+	Users prefer docs in which query terms occur within close proximity
+	Have a (smallest possible) window in a doc that contains all query terms
+Aggregate Scores
+	We've seen that score functions can combine cosine, static quality, proximty, etc.
+	
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+IR Ssytem Evaluation
+-------------------------
+User's need 
+	Users's need is tranlsated into a query
+	Relevance is assessed relative to the user need, not the query.
+	So like if th useer searches some shit about his/her pool being dark at the bottom with the query pool cleaner... a good search engine will address the need for help
+Measuring Relevance 
+	Steps to measure SE relevance
+	1.A benchmark document collection (standard test collections)
+	2.A benchmark suite of queries
+	3.An assessment of either Relevant or Nonrelvant for each qquery and each document
+Precision Recall, and F Measure
+	Binary assessments
+		Precision: fraction of retrievd documents that are relevant
+		P = (relevant | retrieved) = truePositive/(truePositive + falsePositive)
+		Recall: fraction of relevant docs that are retrievd.
+		R= (retrieved | relevant) = truePositive/(truePositive + falseNegative)
+F Measure trades off precision versus recall
+	beta sets the balance for precision vs recall.
+		0 < beta < 1 more mephasis on precision
+		beta > 1 in recall
+		popular variants: beta = 0.5, beta = 1, beta = 2
+Precision at K
+	Set a rank threshold K
+		compute % relevant in top K ignore documents below threshold
+Mean Average Precision (MAP)
+	Consider rank positon of each relevant document
+	Properties:
+	if a relvant document never getrs retrieved, we assume the precision corresponding to that relavnt doc to be zero
+	Map is macro-averagingg: each query counts equally
+	Now perhaps most commonly used meausre research
+Gain
+	Gain is a measure of a documents relevance
+	Gain is accumulated (or highessst) starting at the top of the ranking 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Link Analysis
+----------------------------------
+What is link analysis?
+	The analkysis of hyperlinks and the graph structure of the web
+Simple Iterative Logic
+	Good links will not point to bad links
+	All other combinations are possible
+	Links that point to bad links are also bad
+	If a good link points to you, you're a good link
+Indexing Anchor Text
+	When indexing a document D, include (with some wieght) anchor text from linsk ponting to D
+HITS High Level Scheme
+	1.Root set: given the query, use a text index to get all pages containing the query
+	2.Base Set: add in any page that either points to a page from the root set or is pointed to by one of the pages in the root set
+	3.Iterate for each page x in the base set, a hub score h(x) and an authority score a(x)
+	4.After iterations
+
+
