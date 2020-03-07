@@ -6,6 +6,6 @@ The desktop version of Spotify does not provide the lyrics of songs. SpotifyProj
 using Genius's API.
 
 ## Screenshots ##
-<img src="ProjectShots/shot_overview.PNG" width=500 />
-<img src="ProjectShots/shot_queen.PNG" width=500 />
-<img src="ProjectShots/shot_lyrics.PNG" width=500 />
+<img src="ProjectShots/shot_overview.PNG" width=700 />
+<img src="ProjectShots/shot_queen.PNG" width=700 />
+<img src="ProjectShots/shot_lyrics.PNG" width=700 />
