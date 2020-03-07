@@ -13,15 +13,11 @@ import requests
 import tkinter
 
 
-#import vlc
-#C:\Users\jmadr\Downloads\pygame-1.9.4-cp35-cp35m-win32.whl
-#from pygame import mixer
-#C:\Users\jmadr\Desktop\SpotifyProj\spotify2.py
-#print(json.dumps(OBJECT, sort_keys=True, indent=4))
+geniusAPI = "YOUR_KEY"
+geniusSecret ="YOUR_KEY""
+geniusToken = "YOUR_KEY""
 
-geniusAPI = "QM0uyGH_vtnAlWVoKChBeZr7ARcpb2UkOMySfNypFax7LZtQs2ZGKya-mKgyoqar"
-geniusSecret = "3Tk5QTJSCqlf9I-6EBMRobEv4FTDWcWwJDsU5qTL1NjiTOkSPAV4psH4lNSsCzOQAViat4ioyi4M6ec_vY2xjg"
-geniusToken = "1mOv7wcXKHY43ySP2UzCQM3kIPBuGI9e8sfG8NAp-91QlkxhzyXBHYFqQNX8x0AE"
+
 button_identities = dict()
 #devices = None
 
@@ -29,7 +25,7 @@ def get_user_ID():
     if len(sys.argv) == 2:
         return sys.argv[1]
 
-    return '223zzazac4geeqx76lonsmmqy?si=VNYC3hF2TSahT90JCZs4UQ'
+    return '"YOUR_SPOTIFY_ID'
 
 def format_time_duration(time):
     time = str(datetime.timedelta(milliseconds=time))       #"HR:MIN:SEC.MILLSEC"
@@ -55,8 +51,8 @@ def format_release_date(date):
 def ask_user_permission(userName):
     permissions= "user-read-private user-read-playback-state user-modify-playback-state"
 
-    authToken = util.prompt_for_user_token(userName, client_id='ce48c997120f4744a9bdc2bd9d65f315',
-                client_secret='7ea6b9fbfab949d1bbd33ebd94ef18d4', scope= permissions, redirect_uri='http://google.com/')
+    authToken = util.prompt_for_user_token(userName, client_id='YOUR_CLIENT_ID',
+                client_secret='YOUR_CLIENT_SECRET', scope= permissions, redirect_uri='http://google.com/')
 
     return authToken
 
